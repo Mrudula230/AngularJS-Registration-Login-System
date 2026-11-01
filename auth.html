@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html ng-app="authApp">
+<head>
+    <title>AngularJS Registration and Login</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+</head>
+<body ng-controller="authCtrl">
+
+<div ng-hide="showLogin || loggedIn">
+    <h2>Registration</h2>
+    <form name="regForm" ng-submit="register()" novalidate>
+        First Name: <input type="text" ng-model="reg.firstName" required><br><br>
+        Last Name: <input type="text" ng-model="reg.lastName" required><br><br>
+        Username: <input type="text" ng-model="reg.username" required><br><br>
+        Password: <input type="password" name="pwd" ng-model="reg.password" ng-minlength="6" required>
+        <span style="color:red" ng-show="regForm.pwd.$error.minlength">Minimum 6 characters</span>
+        <br><br>
+        <button type="submit" ng-disabled="regForm.$invalid">Register</button>
+    </form>
+    <p>Already registered? <a href="" ng-click="showLogin=true">Login</a></p>
+</div>
+
+<div ng-show="showLogin && !loggedIn">
+    <h2>Login</h2>
+    <form ng-submit="login()">
+        Username: <input type="text" ng-model="log.username" required><br><br>
+        Password: <input type="password" ng-model="log.password" required><br><br>
+        <button type="submit">Login</button>
+    </form>
+    <p>New user? <a href="" ng-click="showLogin=false">Register</a></p>
+</div>
+
+<div ng-show="loggedIn">
+    <h2>Welcome, {{currentUser.firstName}} {{currentUser.lastName}}!</h2>
+    <button ng-click="logout()">Logout</button>
+</div>
+
+<p style="color:blue">{{message}}</p>
+
+<script>
+var app = angular.module('authApp', []);
+app.controller('authCtrl', function($scope) {
+    $scope.users = [];
+    $scope.reg = {};
+    $scope.log = {};
+    $scope.showLogin = false;
+    $scope.loggedIn = false;
+
+    $scope.register = function() {
+        var exists = $scope.users.some(function(u) {
+            return u.username === $scope.reg.username;
+        });
+        if (exists) {
+            $scope.message = 'Username already taken';
+            return;
+        }
+        $scope.users.push(angular.copy($scope.reg));
+        $scope.reg = {};
+        $scope.showLogin = true;
+        $scope.message = 'Registration successful. Please login.';
+    };
+
+    $scope.login = function() {
+        var found = $scope.users.find(function(u) {
+            return u.username === $scope.log.username &&
+                   u.password === $scope.log.password;
+        });
+        if (found) {
+            $scope.currentUser = found;
+            $scope.loggedIn = true;
+            $scope.message = '';
+        } else {
+            $scope.message = 'Invalid username or password';
+        }
+    };
+
+    $scope.logout = function() {
+        $scope.loggedIn = false;
+        $scope.log = {};
+        $scope.showLogin = true;
+    };
+});
+</script>
+</body>
+</html>
